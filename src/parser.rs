@@ -234,6 +234,13 @@ impl<'a> Nmea {
         }
     }
 
+    fn merge_zda_data(&mut self, zda: ZdaData) {
+        self.fix_time = zda.utc_time;
+        self.fix_date = zda.utc_date();
+        //self.local_zone_hours = zda.local_zone_hours;
+        //self.local_zone_minutes = zda.local_zone_minutes;
+    }
+
     fn merge_txt_data(&mut self, txt: TxtData) {
         self.last_txt = Some(txt);
     }
@@ -278,6 +285,10 @@ impl<'a> Nmea {
             ParseResult::TXT(txt) => {
                 self.merge_txt_data(txt);
                 Ok(SentenceType::TXT)
+            }
+            ParseResult::ZDA(zda) => {
+                self.merge_zda_data(zda);
+                Ok(SentenceType::ZDA)
             }
             ParseResult::Unsupported(sentence_type) => Err(Error::Unsupported(sentence_type)),
             // any other implemented sentence which is not part of the `Nmea` parsing is unsupported
